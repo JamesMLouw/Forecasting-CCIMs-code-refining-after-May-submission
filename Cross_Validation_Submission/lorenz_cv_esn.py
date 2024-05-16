@@ -45,7 +45,7 @@ d_in, d_out = 3, 3
 
 # Construct training input and teacher, testing input and teacher
 train_in_esn = data[0:ntrain] 
-train_teach_esn = data[0:ntrain]
+train_teach_esn = data[:ntrain]
 
 # Define the range of parameters for which you want to cross validate over
 ld_range = np.logspace(-17,-9,17) 
@@ -61,6 +61,8 @@ param_names = ["ld", "gamma", "spec rad", "s"]
 param_add = [N, d_in, d_out, washout]
 
 #%% testing one esn
+
+print(train_in_esn[11000])
 
 ld = 3e-15
 gamma = 3
