@@ -18,9 +18,7 @@ plt.rcParams['font.size'] = 25
 #access = '$x$ coordinate' # options 'full system', '$x$ coordinate'
 access = 'full system'
 
-experimenting = True #for the names of files to be saved, to prevent overwriting good data
-
-N_init_cond = 10
+N_init_cond = 1
 type_init_conds = 'close' # options 'along trajectory', 'close' or 'far'
 spread = 20 # only used in the case of 'along trajectory' to determine how far all the initial conditions should be spread. The initial conditions will be spread evenly from time t=0 up to time t=spread
 
@@ -44,10 +42,10 @@ lor_args = (10, 8/3, 28)
 
 if access == 'full system':
     # for access to full system
-    h = 0.02
-    t_span = (0, 250)
-    t_split = 200
-    t_trans = 20
+    h = 0.005
+    t_span = (0, 100)
+    t_split = 60
+    t_trans = 5
 elif access == '$x$ coordinate':
     # for access to single coordinate
     h = 0.005
@@ -77,8 +75,10 @@ else:
     init_conds = data_gen.gen_init_cond(N_init_cond, Z0, sd, lorenz, 0, h,
                                         lor_args, pdf = 'gaussian')
     
+    init_conds = [Z0]
+    
 # save initial conditions
-np.save('Initial conditions Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' ',init_conds)
+np.save('Initial conditions Lorenz access - ' + access,init_conds)
 
 #%% generate trajectories
 training_datas = np.zeros( (N_init_cond, steps_split, len(Z0)) ) # to be used for washout and training
@@ -108,9 +108,9 @@ else:
 
 #save trajectory data
 
-np.save('Training data Lorenz access - full system experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' ',training_datas)
-np.save('Testing data Lorenz access - full system experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' ',testing_datas)
-np.save('Time steps data Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' ',time_steps)
+np.save('Training data Lorenz access - full system',training_datas)
+np.save('Testing data Lorenz access - full system',testing_datas)
+np.save('Time steps data Lorenz access - ' + access,time_steps)
 
 #%% construct observation data
 
@@ -130,8 +130,8 @@ if access == '$x$ coordinate':
 
     training_datas, testing_datas = training_datas2, testing_datas2
 
-    np.save('Training data Lorenz access - ' + str(access) + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' ',training_datas)
-    np.save('Testing data Lorenz access - ' + str(access) + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' ',testing_datas)
+    np.save('Training data Lorenz access - ' + str(access) ,training_datas)
+    np.save('Testing data Lorenz access - ' + str(access) ,testing_datas)
 
 #%% define and train esn
 
@@ -170,13 +170,26 @@ elif access == '$x$ coordinate':
 else:
     raise ValueError('Choose valid access')
 
+ld = 3e-15
+gamma = 3
+spec_rad = 1.2
+s = 0
+
+
+zeta = esn_help.gen_matrix(shape=(N,1), density=1, pdf="ones", seeded=False)
 np.random.seed(0) #the random seed 201 works well for the above ld gamma etc.
 C = esn_help.gen_matrix(shape=(N,d), density=1, sd=2, mean=-1, pdf="uniform", seeded=False)
 A = esn_help.gen_matrix(shape=(N,N), density=0.01, sd=2, mean=-1, pdf="uniform", seeded=False)
 A = esn_help.spectral_radius_matrix(A, spec_rad)
-zeta = esn_help.gen_matrix(shape=(N,1), density=1, pdf="ones", seeded=False)
 
 x_0 = np.zeros(shape=(N,1), dtype=float)
+
+print(training_datas[0][11000])
+print(np.max(A))
+print(np.mean(A))
+print(np.max(C))
+print(np.mean(C))
+print(zeta)
 
 
 #%% test for esp
@@ -197,7 +210,7 @@ if check_esp:
 state_dicts = esn_help.multi_listening(training_datas, x_0, A, gamma, C, s, zeta, d, N)
 
 # save state_dicts
-np.save('State dicts Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' ',state_dicts)
+np.save('State dicts Lorenz access - ' + access ,state_dicts)
 
 #%% train esn
 if training_type == 'train over all trajectories':
@@ -210,25 +223,41 @@ else:
 # save regression result
 
 w, bias = reg_result
-np.save('Regression result w Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type +' ',w)
-np.save('Regression result bias Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type +' ',bias)
+np.save('Regression result w Lorenz access - ' + access ,w)
+np.save('Regression result bias Lorenz access - ' + access,bias)
 
+print(np.mean(w))
+print(np.max(w))
+print(w.shape)
+print(np.mean(bias))
+print(np.max(bias))
+print(bias.shape)
 
+last_state = state_dicts[0]['last_state']
+
+print(last_state.shape)
+print(np.max(last_state))
+print(np.mean(last_state))
 #%% predict for all trajectories
 	
 predictions = esn_help.multi_prediction(state_dicts, reg_result, testing_datas, A, gamma, C, s, zeta, d, N)
 
+#print(predictions[0].shape)
+last_x = predictions[0]['states'][-1]
+print(np.mean(last_x))
+print(np.max(last_x))
+
 #save predictions
 
 
-np.save('Predictions Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type +' ',predictions)
+np.save('Predictions Lorenz access - ' + access ,predictions)
 
 av_training_error = esn_help.av_multi_training_error(state_dicts, reg_result, steps_trans)
 print('Average training error: ', av_training_error)
 
 #save average training error
 
-np.save('Average training error Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type +' ',av_training_error)
+np.save('Average training error Lorenz access - ' + access ,av_training_error)
 
 error = 0
 for i in range(N_init_cond):
@@ -239,7 +268,7 @@ print('Average testing error: ', av_error)
 
 # save average testing error
 
-np.save('Average testing error Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type +' ',av_error)
+np.save('Average testing error Lorenz access - ' + access ,av_error)
 
 # %% plot lyapunov spectrums
 skip_les = False
@@ -299,13 +328,13 @@ if not(skip_les):
 
     # save top le
 
-    np.save('Top LE ESN Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type +' ',lorenz_esn_top_le)
-    np.save('LE convergence Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type +' ',lorenz_esn_time)
+    np.save('Top LE ESN Lorenz access - ' + access ,lorenz_esn_top_le)
+    np.save('LE convergence Lorenz access - ' + access,lorenz_esn_time)
     
 
 else:
      lorenz_esn_top_le = 0.9125459202784676 #for parameters on 8 April 2024 Monday
-     # np.save('Top LE ESN Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type +' ',lorenz_esn_top_le)
+     # np.save('Top LE ESN Lorenz access - ' + access ,lorenz_esn_top_le)
 
 #%%
 print(lorenz_esn_top_le)
@@ -317,20 +346,20 @@ print(lorenz_esn_top_le)
 
 #%% Read in data
 
-init_conds = np.load('Initial conditions Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' .npy')
-training_datas = np.load('Training data Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' .npy')
-testing_datas =  np.load('Testing data Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' .npy')
-time_steps =  np.load('Time steps data Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' .npy')
-state_dicts = np.load('State dicts Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' .npy', allow_pickle = True)
+init_conds = np.load('Initial conditions Lorenz access - ' + access + '.npy')
+training_datas = np.load('Training data Lorenz access - ' + access + '.npy')
+testing_datas =  np.load('Testing data Lorenz access - ' + access + '.npy')
+time_steps =  np.load('Time steps data Lorenz access - ' + access + '.npy')
+state_dicts = np.load('State dicts Lorenz access - ' + access + '.npy', allow_pickle = True)
 
-w = np.load('Regression result w Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type + ' .npy')
-bias = np.load('Regression result bias Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type + ' .npy')
+w = np.load('Regression result w Lorenz access - ' + access + '.npy')
+bias = np.load('Regression result bias Lorenz access - ' + access + '.npy')
 reg_result = (w, bias)
-predictions = np.load('Predictions Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type + ' .npy', allow_pickle = True)
-av_training_error = np.load('Average training error Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type + ' .npy')
-av_error = np.load('Average testing error Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type + ' .npy')
-lorenz_esn_top_le = np.load('Top LE ESN Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type + ' .npy')
-lorenz_esn_time = np.load('LE convergence Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' training type - ' + training_type +' .npy')
+predictions = np.load('Predictions Lorenz access - ' + access + '.npy', allow_pickle = True)
+av_training_error = np.load('Average training error Lorenz access - ' + access + '.npy')
+av_error = np.load('Average testing error Lorenz access - ' + access + '.npy')
+lorenz_esn_top_le = np.load('Top LE ESN Lorenz access - ' + access + '.npy')
+lorenz_esn_time = np.load('LE convergence Lorenz access - ' + access + '.npy')
 
 #%%
 print(lorenz_esn_top_le)
@@ -734,8 +763,8 @@ if not(only_top) and not(only_top_system):
 
 #%% Read in data
 access = 'full system'
-training_datas = np.load('Training data Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' .npy')
-testing_datas =  np.load('Testing data Lorenz access - ' + access + ' experimenting - ' + str(experimenting) + ' trajectories - ' + str(N_init_cond) + ' type init conds  - ' + type_init_conds + ' sd - ' + str(sd) + ' .npy')
+training_datas = np.load('Training data Lorenz access - ' + access + '.npy')
+testing_datas =  np.load('Testing data Lorenz access - ' + access + '.npy')
 
 # %% Check and plot training dataset
 if access == 'full system':

@@ -60,7 +60,47 @@ param_names = ["ld", "gamma", "spec rad", "s"]
 # Define the additional inputs taken in by the 
 param_add = [N, d_in, d_out, washout]
 
-#%%
+#%% testing one esn
+
+ld = 3e-15
+gamma = 3
+spec_rad = 1.2
+s = 0
+
+esn = ESN(ld, gamma, spec_rad, s, N, d_in, d_out, washout)
+
+print(np.max(esn.A))
+print(np.mean(esn.A))
+print(np.max(esn.C))
+print(np.mean(esn.C))
+print(esn.zeta)
+
+#%% train esn
+
+esn.Train(train_in_esn[:12000], train_teach_esn[:12000])
+
+w = esn.W
+bias = esn.bias
+last_state = esn.x_start_path_continue
+
+print(np.mean(w))
+print(np.max(w))
+print(w.shape)
+print(np.mean(bias))
+print(np.max(bias))
+print(bias.shape)
+
+print(last_state.shape)
+print(np.max(last_state))
+print(np.mean(last_state))
+
+#%% path continue with esn
+
+predictions = esn.PathContinue(train_in_esn[12000-1], 8000)
+last_x = predictions[-1]
+print(predictions.shape)
+print(np.mean(last_x))
+print(np.max(last_x))
 
 
 #%%
