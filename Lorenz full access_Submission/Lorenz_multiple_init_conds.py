@@ -170,7 +170,7 @@ elif access == '$x$ coordinate':
 else:
     raise ValueError('Choose valid access')
 
-ld = 3e-15
+ld = 1e-15
 gamma = 3
 spec_rad = 1.2
 s = 0
@@ -212,9 +212,14 @@ state_dicts = esn_help.multi_listening(training_datas, x_0, A, gamma, C, s, zeta
 # save state_dicts
 np.save('State dicts Lorenz access - ' + access ,state_dicts)
 
+#%%
+print(training_datas[0].shape)
 #%% train esn
 if training_type == 'train over all trajectories':
-    reg_result = esn_help.multi_regression_covariance(ld, state_dicts, steps_trans)
+    # reg_result = esn_help.multi_regression_covariance(ld, state_dicts, steps_trans)
+    reg_result = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],state_dicts[0]['input_data'],1000) #this one doesn't agree with the cv code
+    reg_result = esn_help.regression_covariance_targets(ld, training_datas[0].transpose(),state_dicts[0]['input_data'],1000) #this one agrees with the cv code
+    # as far as I can tell, there is nothing wrong with the esn helperfunctions code; it just seems to be the two different ways of inputting the inputs z are giving different results, I know not why, since in the function where the regression is done, it seems that both give the same Z.
 elif training_type == 'train over one trajectory':
 	reg_result = esn_help.regression_covariance(ld, state_dicts[0], steps_trans)
 else:

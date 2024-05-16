@@ -62,9 +62,9 @@ param_add = [N, d_in, d_out, washout]
 
 #%% testing one esn
 
-print(train_in_esn[11000])
+print(train_teach_esn[11000])
 
-ld = 3e-15
+ld = 1e-15
 gamma = 3
 spec_rad = 1.2
 s = 0
@@ -95,6 +95,7 @@ print(bias.shape)
 print(last_state.shape)
 print(np.max(last_state))
 print(np.mean(last_state))
+
 
 #%% path continue with esn
 

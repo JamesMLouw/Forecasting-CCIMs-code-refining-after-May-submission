@@ -199,10 +199,14 @@ def regression_covariance_targets(ld, states, targets, washout):
     N = X.shape[0]
     T = X.shape[1]
     d = Z.shape[0]
-    
-    #print('X', X.shape)
-    #print('Z', Z.shape)
 
+    print('X', X.shape)
+    print(X[:5,-1])
+    print('Z', Z.shape)
+    print(Z[:,-1])
+    print('lambda', ld)
+    print(type(Z))
+    
     cov_XZ = (1/T) * (X @ Z.transpose()) - (np.mean(X, axis=1).reshape(N, 1) @ np.mean(Z, axis=1).reshape(d, 1).transpose())
     cov_XX = (1/T) * (X @ X.transpose()) - (np.mean(X, axis=1).reshape(N, 1) @ np.mean(X, axis=1).reshape(N, 1).transpose()) + ld * np.identity(N)
     
@@ -222,8 +226,12 @@ def multi_regression_covariance(ld, state_dicts, T_trans):
     X = np.concatenate( X ).transpose()
     Z = np.concatenate( Z ).transpose()
     
-    print(X.shape)
-    print(Z.shape)
+    print('X', X.shape)
+    print(X[:5,-1])
+    print('Z', Z.shape)
+    print(Z[:,-1])
+    print('lambda', ld)
+
     
     N = X.shape[0]
     T = X.shape[1]
@@ -418,7 +426,7 @@ def prediction_error_plot(z_errors, h, max_lyapunov_exp, plot_with_error_bound =
         error_ax.set_ylabel('prediction error')
         
     if plot_with_error_bound == True:
-        # l1 = max_lyapunov_exp 
+        l1 = max_lyapunov_exp 
         
         if log_scale == True:
             z_error_bounds = max(z_errors[:N_transient]) + Time #np.array([t*l1 for t in Time]) # time scale is in Lyapunov times already

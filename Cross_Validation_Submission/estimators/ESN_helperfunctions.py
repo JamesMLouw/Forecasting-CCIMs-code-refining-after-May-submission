@@ -200,8 +200,13 @@ def regression_covariance_targets(ld, states, targets, washout):
     T = X.shape[1]
     d = Z.shape[0]
     
-    #print('X', X.shape)
-    #print('Z', Z.shape)
+    print('X', X.shape)
+    print(X[:5,-1])
+    print('Z', Z.shape)
+    print(Z[:,-1])
+    print('lambda', ld)
+
+    print(type(Z))
 
     cov_XZ = (1/T) * (X @ Z.transpose()) - (np.mean(X, axis=1).reshape(N, 1) @ np.mean(Z, axis=1).reshape(d, 1).transpose())
     cov_XX = (1/T) * (X @ X.transpose()) - (np.mean(X, axis=1).reshape(N, 1) @ np.mean(X, axis=1).reshape(N, 1).transpose()) + ld * np.identity(N)
@@ -386,14 +391,15 @@ def prediction_error_plot(z_errors, h, max_lyapunov_exp, plot_with_error_bound =
     T_bar = len(z_errors)
     if time_cut_off != None:
         T_bar = min(math.floor(time_cut_off/h), T_bar)
-    Time = [i*h for i in range(T_bar)]
+    Time = [i*h*max_lyapunov_exp for i in range(T_bar)]
     z_errors = z_errors[:T_bar]
 
     if log_scale == True:
         z_errors = np.log(z_errors)
-
     error_plot, error_ax = plt.subplots(figsize=(20,5))
     error_ax.plot(Time, z_errors, label = 'Actual errors')
+    error_ax.set_xlim(0, (time_cut_off - h) * max_lyapunov_exp)
+    error_ax.set_ylim(z_errors[1])
     
     if include_title:
         error_ax.set_title(title)
@@ -409,17 +415,18 @@ def prediction_error_plot(z_errors, h, max_lyapunov_exp, plot_with_error_bound =
             else:
                 error_ax.set_title('{} Plot of prediction errors against time trained with access to {}'.format(system_name, access))
         """
-    error_ax.set_xlabel('time')
+    
+    error_ax.set_xlabel('Lyapunov times')
     if log_scale == True:
-        error_ax.set_ylabel('log prediction error')
+        error_ax.set_ylabel('log prediction errors')
     else:
         error_ax.set_ylabel('prediction error')
         
     if plot_with_error_bound == True:
-        l1 = max_lyapunov_exp
+        l1 = max_lyapunov_exp 
         
         if log_scale == True:
-            z_error_bounds = max(z_errors[:N_transient]) + np.array([t*l1 for t in Time])
+            z_error_bounds = max(z_errors[:N_transient]) + Time #np.array([t*l1 for t in Time]) # time scale is in Lyapunov times already
             error_ax.set_ylim([min(z_errors) - 5, max(z_errors) + 5])
         if log_scale == False:
             z_error_bounds = max(z_errors[:N_transient]) * np.array([np.exp(t*l1) for t in Time])
@@ -427,7 +434,7 @@ def prediction_error_plot(z_errors, h, max_lyapunov_exp, plot_with_error_bound =
             
         error_ax.plot(Time, z_error_bounds, label = 'Predicted error bound')
 
-    #plt.legend(loc = 'lower left')
+    plt.legend(loc = 'lower right')
     error_plot.savefig('error_plot.pdf')
     error_plot.show()
     
