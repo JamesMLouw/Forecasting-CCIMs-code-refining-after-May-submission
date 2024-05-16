@@ -3,7 +3,6 @@
 May 8 Wed: I noticed that h = 0.005 here but in the code for graphing it is h=0.02. I want to change the graphing code and make sure the two correlate (same RC when started with same init cond etc.)
 Then run the cross validation code and use the parameters in the graphing code to see if that works. Also check my crossvalidation code.
 
-jkljkl
 """
 import numpy as np
 
