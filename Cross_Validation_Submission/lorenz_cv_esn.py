@@ -1,4 +1,8 @@
 #%%
+"""
+May 8 Wed: I noticed that h = 0.005 here but in the code for graphing it is h=0.02. I want to change the graphing code and make sure the two correlate (same RC when started with same init cond etc.)
+Then run the cross validation code and use the parameters in the graphing code to see if that works. Also check my crossvalidation code.
+"""
 import numpy as np
 
 from datagen.data_generate import rk45
@@ -35,61 +39,32 @@ data = data[::slicing]
 ndata  = len(data)
 ntrain = 20000 
 washout = 1000
-ntest = ndata - ntrain
 N = 1000
 d_in, d_out = 3, 3
-ld = 10**(-13) 
-gamma = 3.7
-spec_rad = 1.2
-norm_A = 0.1
-s = 0
-
 
 # Construct training input and teacher, testing input and teacher
 train_in_esn = data[0:ntrain] 
 train_teach_esn = data[0:ntrain]
 
-"""
-# Normalise training arrays if necessary
-normalisation_output = normalise_arrays([training_input_orig, training_teacher_orig], norm_type=None)
-train_in_esn, train_teach_esn = normalisation_output[0]
-shift_esn, scale_esn = normalisation_output[1], normalisation_output[2]
-"""
-
 # Define the range of parameters for which you want to cross validate over
-
-ld_range = np.logspace(-17,-9,17) # np.logspace(-17, -7, 41)  # [ld, ld+1] 
-gamma_range =  np.linspace(2,6,41) # np.linspace(2, 5, 31) # [gamma, gamma+1] #
-spec_rad_range =  np.linspace(0, 1.5, 16) # np.linspace(0.1, 3, 30) # [spec_rad, spec_rad+0.3] #
-s_range = np.array([0]) # np.linspace(0, 1, 5) # [s, 1] # 
+ld_range = np.logspace(-17,-9,17) 
+gamma_range =  np.linspace(2,6,41)
+spec_rad_range =  np.linspace(0, 1.5, 16)
+s_range = np.array([0])
 param_ranges = [ld_range, gamma_range, spec_rad_range, s_range]
-
-"""
-ld_range =  [ld, ld+1] 
-gamma_range =   [gamma, gamma+1] #
-spec_rad_range =   [spec_rad, spec_rad+0.3] #
-s_range = [s, 1] # 
-param_ranges = [ld_range, gamma_range, spec_rad_range, s_range]
-"""
-"""
-ld_range =  [ld] 
-gamma_range =   [gamma] #
-spec_rad_range =   [spec_rad] #
-s_range = [s] # 
-param_ranges = [ld_range, gamma_range, spec_rad_range, s_range]
-"""
 
 # Define the names of the parameters -- orders must match
 param_names = ["ld", "gamma", "spec rad", "s"]
+
 # Define the additional inputs taken in by the 
 param_add = [N, d_in, d_out, washout]
 
-print(train_in_esn.shape, train_teach_esn.shape)
-print(param_ranges, param_add)
+#%%
+
 
 #%%
-train_size = 12000
-validation_size = 4000
+train_size = 10000
+validation_size = 2000
 nstarts = 5
 
 if __name__ == "__main__":
@@ -103,22 +78,6 @@ if __name__ == "__main__":
                                         param_names, param_add, num_processes=25)
     t2 = time()
 print(t2-t1)
-#%%
-print(best_parameters)
-
-#%%
-# for lorenz with full access
-
-best_params1 = {'validation_error': 434.167717435026, 'ld': 1e-09, 'gamma': 5.0, 'spec rad': 0.25, 's': 1}
-
-#%%
-
-#%%
-
-esn = ESN(ld,gamma, spec_rad,s,N,d_in,d_out,washout)
-esn = esn.Train(train_in_esn, train_teach_esn)
-p = esn.PathContinue(train_teach_esn[-1], 1000)
-print(p.shape)
 
 # %%
 """
