@@ -214,12 +214,20 @@ np.save('State dicts Lorenz access - ' + access ,state_dicts)
 
 #%%
 print(training_datas[0].shape)
+print(state_dicts[0]['input_data'].shape)
+
+a = state_dicts[0]['input_data']
+b = training_datas[0].transpose()
+print(a.shape)
+print(b.shape)
+print(np.max(np.abs(a-b)))
 #%% train esn
 if training_type == 'train over all trajectories':
-    # reg_result = esn_help.multi_regression_covariance(ld, state_dicts, steps_trans)
-    reg_result = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],state_dicts[0]['input_data'],1000) #this one doesn't agree with the cv code
-    reg_result = esn_help.regression_covariance_targets(ld, training_datas[0].transpose(),state_dicts[0]['input_data'],1000) #this one agrees with the cv code
-    # as far as I can tell, there is nothing wrong with the esn helperfunctions code; it just seems to be the two different ways of inputting the inputs z are giving different results, I know not why, since in the function where the regression is done, it seems that both give the same Z.
+    reg_result = esn_help.multi_regression_covariance(ld, state_dicts, steps_trans)
+    #reg_result = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],state_dicts[0]['input_data'],1000) #this one doesn't agree with the cv code, but does agree with the line above, so nothing is wrong with the two algorithms in esn_helperfunctions
+    # reg_result = esn_help.regression_covariance_targets(ld, training_datas[0].transpose(),state_dicts[0]['input_data'],1000) #this one agrees with the cv code # update 22 May This one doesn't work, and in any case the wrong parameters are being inputted in the states.
+    # as far as I can tell, there is nothing wrong with the esn helperfunctions code; it just seems to be the two different ways of inputting the inputs z are 
+    # giving different results, I know not why, since in the function where the regression is done, it seems that both give the same Z.
 elif training_type == 'train over one trajectory':
 	reg_result = esn_help.regression_covariance(ld, state_dicts[0], steps_trans)
 else:
