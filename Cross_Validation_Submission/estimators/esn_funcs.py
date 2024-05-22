@@ -50,6 +50,7 @@ class ESN:
         Performs testing using a new set of testing input 
     PathContinue(latest_input, nhorizon)
         Simulates forward in time using the latest input for nhorizon period of time
+        This requires a training where the training_teacher = training_input, so that the ESN can be run autonomously
     """
     
     def __init__(self, ld, gamma, spec_rad, s, N, d_in, d_out, washout):
@@ -86,7 +87,7 @@ class ESN:
         self.nhorizon = None            # Store length of forecasting horizon
         
        
-    def Train(self, training_input, training_teacher):
+    def Train(self, training_input, training_teacher = None):
         
         """
         Performs training using the training input against the training teacher
@@ -108,17 +109,20 @@ class ESN:
         to perform these tasks on a trajectory continuing directly on the one on which it
         was trained
         """
+        print('difference teacher innput', np.max(np.abs(training_input - training_teacher)))
         
         # Assign as instance attribute that are based on training input data
         self.training_input = training_input 
         self.ninputs = training_input.shape[0]
-        #self.nfeatures = training_input.shape[1]
         
         if self.d_in != training_input.shape[1]:
             raise ValueError("The dimension of the training input is incorrect")
         
         # Assign instance attributes that are related to the training teacher data
         self.ntargets = training_teacher.shape[1]
+        
+        if self.d_out != training_teacher.shape[1]:
+            raise ValueError("The dimension of the training teacher is incorrect")
         
         # Check that the training input and training teacher sizes are the same
         nteacher = training_teacher.shape[0]
@@ -129,11 +133,33 @@ class ESN:
         if self.washout >= self.ninputs:
             raise ValueError("The washout is too large")
                     
-        targets = np.transpose(training_teacher)
         state_dict = esn_help.listening(self.training_input, self.x_0, self.A, self.gamma, 
                                         self.C, self.s, self.zeta, self.d_in, self.N)
-        reg_result = esn_help.regression_covariance_targets(self.ld, state_dict['all_states'],
+        print('difference input state dict input', np.max(np.abs(targets - state_dict['input_data'])))
+        
+        #state_dict['input_data'] = targets
+        if training_teacher == None:
+            reg_result = esn_help.regression_covariance(self.ld, state_dict, self.washout)
+        else:
+            targets = training_teacher.transpose()    
+            reg_result = esn_help.regression_covariance_targets(self.ld, state_dict['all_states'],
                                                             targets, self.washout)
+            
+        reg_result = esn_help.regression_covariance(self.ld, state_dict, self.washout)
+        reg_result1 = esn_help.regression_covariance_targets(self.ld, state_dict['all_states'],
+                                                            targets, self.washout)
+        
+        reg_result2 = esn_help.regression_covariance_targets(self.ld, state_dict['all_states'],
+                                                            state_dict['input_data'], self.washout)
+        print('difference reg results: different functions same variables', np.max(np.abs(reg_result[0] - reg_result2[0])))
+        print('difference reg results: same function different variables', np.max(np.abs(reg_result2[0] - reg_result1[0])))
+        # this is very strange, as far as i can tell the inputs for these two are exactly equal numerically, in type and shape and the functions are the same, yet when calculated the functions output different values. The problem must be somewhere in numpy I think.
+        # in any case, the function line inputted into reg_result is in agreement with the results from the graphing side, so I think we ought to use this one for training.
+        print('input data', targets.shape, type(targets))
+        print('stat dict', state_dict['input_data'].shape, type(state_dict['input_data']))
+        print(all([all(x) for x in state_dict['input_data'] == targets]))
+        print('stat dict' , state_dict['input_data'])
+        print('targets',targets)
         self.W = reg_result[0]
         self.bias = reg_result[1]
         #print('W shape:',self.W.shape)

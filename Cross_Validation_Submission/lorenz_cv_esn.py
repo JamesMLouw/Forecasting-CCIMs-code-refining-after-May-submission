@@ -44,7 +44,7 @@ N = 1000
 d_in, d_out = 3, 3
 
 # Construct training input and teacher, testing input and teacher
-train_in_esn = data[0:ntrain] 
+train_in_esn = data[:ntrain] 
 train_teach_esn = data[:ntrain]
 
 # Define the range of parameters for which you want to cross validate over
@@ -84,6 +84,7 @@ esn.Train(train_in_esn[:12000], train_teach_esn[:12000])
 w = esn.W
 bias = esn.bias
 last_state = esn.x_start_path_continue
+#%%
 
 print(np.mean(w))
 print(np.max(w))
@@ -95,6 +96,11 @@ print(bias.shape)
 print(last_state.shape)
 print(np.max(last_state))
 print(np.mean(last_state))
+
+#%%
+a = np.array([1,1,1])
+b = np.array([1,2,1])
+all(a == b)
 
 
 #%% path continue with esn
