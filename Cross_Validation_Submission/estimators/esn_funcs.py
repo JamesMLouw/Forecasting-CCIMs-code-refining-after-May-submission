@@ -154,7 +154,6 @@ class ESN:
                                                             state_dict['input_data'], self.washout)
         print('difference reg results: different functions same variables', np.max(np.abs(reg_result[0] - reg_result2[0])))
         print('difference reg results: same function different variables', np.max(np.abs(reg_result2[0] - reg_result1[0])))
-        print('same function and variable run twice', np.allclose(reg_result1[0], reg_result3[0]))
         # this is very strange, as far as i can tell the inputs for these two are exactly equal numerically, in type and shape and the functions are the same, yet when calculated the functions output different values. The problem must be somewhere in numpy I think.
         # in any case, the function line inputted into reg_result is in agreement with the results from the graphing side, so I think we ought to use this one for training.
         print('input data', targets.shape, type(targets))
