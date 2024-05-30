@@ -245,6 +245,7 @@ print('inputs same', np.allclose(state_dicts[0]['input_data'], training_datas[0]
 w, bias, cov_XZ = reg_result
 np.save('Regression result w Lorenz access - ' + access ,w)
 np.save('Regression result bias Lorenz access - ' + access,bias)
+asd
 
 print(np.mean(w))
 print(np.max(w))
