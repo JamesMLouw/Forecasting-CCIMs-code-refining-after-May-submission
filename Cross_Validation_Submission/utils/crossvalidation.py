@@ -42,7 +42,7 @@ class CrossValidate:
         self.norm_type = norm_type        
         self.MinMax_range = (0, 1)
     
-    def crossvalidate_per_parameters(self, estimator, data_in, target, iteration_id, estimator_parameters):
+    def crossvalidate_per_parameters(self, estimator, data_in, target, iteration_id, estimator_parameters, use_target = True):
 
         """
         Runs the cross validation process for a single set of parameters into the estimator
@@ -149,10 +149,10 @@ class CrossValidate:
             Estimator = estimator(*estimator_parameters)
             # For path continuation task training and validating
             if self.task == "PathContinue":
-                output = Estimator.Train(train_in, train_target).PathContinue(train_in[-1], validation_target.shape[0]) # JM Louw: I changed train_target[-1] to train_in[-1]. I think this is what is meant to be here?
+                output = Estimator.Train(train_in, train_target, use_teacher = use_target).PathContinue(train_in[-1], validation_target.shape[0]) # JM Louw: I changed train_target[-1] to train_in[-1]. I think this is what is meant to be here?
             # For general forecasting task training and validating
             elif self.task == "Forecast":
-                output = Estimator.Train(train_in, train_target).Forecast(validation_in)
+                output = Estimator.Train(train_in, train_target, use_teacher = use_target).Forecast(validation_in)
             else:
                 raise NotImplementedError("Task on which to cross validate is not available")
             
@@ -174,7 +174,7 @@ class CrossValidate:
         return mean_validation_error
 
     
-    def crossvalidate_multiprocessing(self, estimator, data_in, target, param_ranges, param_names, param_add, num_processes=4):
+    def crossvalidate_multiprocessing(self, estimator, data_in, target, param_ranges, param_names, param_add, num_processes=4, use_target = True):
         
         """
         Runs cross validation for a range of input parameters. Uses multiprocessing.
@@ -217,7 +217,7 @@ class CrossValidate:
         combinations = []
         parameter_combinations = list(product(*param_ranges))
         for combination_id, param_choice in enumerate(parameter_combinations):
-            input_comb = (estimator, data_in, target, combination_id, (*param_choice, *param_add))
+            input_comb = (estimator, data_in, target, combination_id, (*param_choice, *param_add), use_target)
             combinations.append(input_comb)
 
         print('param combs len:', len(parameter_combinations))

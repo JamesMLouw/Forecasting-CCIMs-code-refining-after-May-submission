@@ -3,6 +3,7 @@
 May 8 Wed: I noticed that h = 0.005 here but in the code for graphing it is h=0.02. I want to change the graphing code and make sure the two correlate (same RC when started with same init cond etc.)
 Then run the cross validation code and use the parameters in the graphing code to see if that works. Also check my crossvalidation code.
 
+I also changed the initial condition to (1,1,1), which just looks less picky
 """
 import numpy as np
 
@@ -25,7 +26,7 @@ def lorenz(t, Z, args):
     return np.array([up, vp, wp])
 
 lor_args = (10, 8/3, 28)
-Z0 = (0, 1, 1.05)
+Z0 = np.array([1,1,1])
 
 h = 0.005
 t_span = (0, 100)
@@ -79,7 +80,7 @@ print(esn.zeta)
 
 #%% train esn
 
-esn.Train(train_in_esn[:12000], train_teach_esn[:12000])
+esn.Train(train_in_esn[:12000], use_teacher=False)
 
 w = esn.W
 bias = esn.bias
@@ -96,7 +97,10 @@ print(bias.shape)
 print(last_state.shape)
 print(np.max(last_state))
 print(np.mean(last_state))
+#%%
 
+a = np.array([0,1])
+a==None
 #%%
 a = np.array([1,1,1])
 b = np.array([1,2,1])
@@ -110,6 +114,7 @@ last_x = predictions[-1]
 print(predictions.shape)
 print(np.mean(last_x))
 print(np.max(last_x))
+print(last_x)
 
 
 #%%
