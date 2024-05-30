@@ -148,11 +148,13 @@ class ESN:
         reg_result = esn_help.regression_covariance(self.ld, state_dict, self.washout)
         reg_result1 = esn_help.regression_covariance_targets(self.ld, state_dict['all_states'],
                                                             targets, self.washout)
-        
+        reg_result3 = esn_help.regression_covariance_targets(self.ld, state_dict['all_states'],
+                                                            targets, self.washout)
         reg_result2 = esn_help.regression_covariance_targets(self.ld, state_dict['all_states'],
                                                             state_dict['input_data'], self.washout)
         print('difference reg results: different functions same variables', np.max(np.abs(reg_result[0] - reg_result2[0])))
         print('difference reg results: same function different variables', np.max(np.abs(reg_result2[0] - reg_result1[0])))
+        print('same function and variable run twice', np.allclose(reg_result1[0], reg_result3[0]))
         # this is very strange, as far as i can tell the inputs for these two are exactly equal numerically, in type and shape and the functions are the same, yet when calculated the functions output different values. The problem must be somewhere in numpy I think.
         # in any case, the function line inputted into reg_result is in agreement with the results from the graphing side, so I think we ought to use this one for training.
         print('input data', targets.shape, type(targets))
@@ -160,6 +162,7 @@ class ESN:
         print(all([all(x) for x in state_dict['input_data'] == targets]))
         print('stat dict' , state_dict['input_data'])
         print('targets',targets)
+
         self.W = reg_result[0]
         self.bias = reg_result[1]
         #print('W shape:',self.W.shape)

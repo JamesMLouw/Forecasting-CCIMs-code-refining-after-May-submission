@@ -223,9 +223,11 @@ print(b.shape)
 print(np.max(np.abs(a-b)))
 #%% train esn
 if training_type == 'train over all trajectories':
-    reg_result = esn_help.multi_regression_covariance(ld, state_dicts, steps_trans)
-    #reg_result = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],state_dicts[0]['input_data'],1000) #this one doesn't agree with the cv code, but does agree with the line above, so nothing is wrong with the two algorithms in esn_helperfunctions
-    # reg_result = esn_help.regression_covariance_targets(ld, training_datas[0].transpose(),state_dicts[0]['input_data'],1000) #this one agrees with the cv code # update 22 May This one doesn't work, and in any case the wrong parameters are being inputted in the states.
+    #reg_result = esn_help.multi_regression_covariance(ld, state_dicts, steps_trans)
+    #reg_result1 = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'], training_datas[0].transpose()[:12000], steps_trans )
+    reg_result = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],state_dicts[0]['input_data'],1000) # this one doesn't agree with the cv code, but does agree with the line above, so nothing is wrong with the two algorithms in esn_helperfunctions
+    reg_result1 = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],training_datas[0].transpose()[:12000],1000) # this one agrees with the cv code # update 22 May This one doesn't work, and in any case the wrong parameters are being inputted in the states.
+    reg_result2 = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],training_datas[0].transpose()[:12000],1000)
     # as far as I can tell, there is nothing wrong with the esn helperfunctions code; it just seems to be the two different ways of inputting the inputs z are 
     # giving different results, I know not why, since in the function where the regression is done, it seems that both give the same Z.
 elif training_type == 'train over one trajectory':
@@ -233,9 +235,14 @@ elif training_type == 'train over one trajectory':
 else:
      raise ValueError('Please pick a training type')
 
+print('same?', np.allclose(state_dicts[0]['input_data'], training_datas[0].transpose()[:12000]))
+print('regression result same?', np.allclose(reg_result[0], reg_result1[0]))
+print('same function and variable run twice', np.allclose(reg_result1[0], reg_result2[0]))
+print('inputs same', np.allclose(state_dicts[0]['input_data'], training_datas[0].transpose()[:12000]))
+
 # save regression result
 
-w, bias = reg_result
+w, bias, cov_XZ = reg_result
 np.save('Regression result w Lorenz access - ' + access ,w)
 np.save('Regression result bias Lorenz access - ' + access,bias)
 
