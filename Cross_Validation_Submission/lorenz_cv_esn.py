@@ -97,14 +97,6 @@ print(bias.shape)
 print(last_state.shape)
 print(np.max(last_state))
 print(np.mean(last_state))
-#%%
-
-a = np.array([0,1])
-a==None
-#%%
-a = np.array([1,1,1])
-b = np.array([1,2,1])
-all(a == b)
 
 
 #%% path continue with esn
@@ -115,7 +107,6 @@ print(predictions.shape)
 print(np.mean(last_x))
 print(np.max(last_x))
 print(last_x)
-
 
 #%%
 train_size = 10000
@@ -133,6 +124,7 @@ if __name__ == "__main__":
                                         param_names, param_add, num_processes=25, use_target=False)
     t2 = time()
 print(t2-t1)
+
 
 # %%
 """

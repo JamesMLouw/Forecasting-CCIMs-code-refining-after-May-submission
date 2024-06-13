@@ -52,9 +52,9 @@ class CrossValidate:
         estimator : class
             Class for the type of estimator which will be initialised and trained (eg ESN, Volterra series etc.)
         data_in : array_like
-            Full input data. Will be split up to form the folds
+            Full input data. Will be split up to form the folds. shape: (nsamples, ndim)
         target : array_like
-            Full target data. Will be split up to form the folds
+            Full target data. Will be split up to form the folds. shape: (nsamples, ndim)
         estimator_parameters : array
             Parameters that will be rolled out and passed into the estimator
         use_target : boolean
@@ -103,7 +103,7 @@ class CrossValidate:
         validation_errors = []
         
         # Iterate through data_in, training method on each fold then compute validation results
-        n_folds = 0     # records number of folds
+        n_folds = 0     # records number of folds (not sure how this differs from nstarts)
         for start_id in range(0, nstarts):
             
             # Define the starting index
@@ -191,15 +191,20 @@ class CrossValidate:
             Estimator for which to tune hyperparameters for. Has to have methods Train, PathContinue/Forecast. 
             Order of inputs during initialisation need to be of the same order as param_ranges and param_add when concatenated
         data_in : array_like
-            Full input data. Will be split up to form the folds
+            Full input data. Will be split up to form the folds. shape: (nsamples, ndim)
         target : array_like
-            Full target data. Will be split up to form the folds
+            Full target data. Will be split up to form the folds. shape: (nsamples, ndim)
         param_ranges : list of arrays or tuple of arrays
             List or tuple of the parameter values to cross validate for. Must be in the same order as param_names.
         param_names : list of str
             List of names of the parameter values to cross validate for. Must be in the same order as param_ranges.
         param_add : list
             The additional parameters taken in by the estimator that are NOT being cross validated for
+        num_processes : int
+            Number of processes started in parallel. Note, this does not necessarily correspond to the number of cpu cores being used.
+        use_target : boolean
+            Controls whether to use the target data or not. In the case of ESNs this should be set to False, so that the ESNs generated
+            agree with those in the code written for graphing the ESNs. Default True.
             
         Returns
         -------
@@ -230,7 +235,9 @@ class CrossValidate:
         
         # Perform parallelised cross validation using the defined pool object
         result = pool.starmap(self.crossvalidate_per_parameters, combinations)
+        
         """
+        # in case the starmap function is not working
         result = []
         for i in range( len(combinations)):
             print('iteration :', i)

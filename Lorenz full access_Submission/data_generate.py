@@ -3,7 +3,7 @@ print(os.getcwd())
 
 import numpy as np
 
-def iter_rk45(prev, t, h, f, fargs=None):
+def iter_rk45(prev, t, h, f, fargs=None): # on wikipedia this is simply called the RK4 method.
     
     if fargs == None:
         z1 = prev
@@ -37,7 +37,7 @@ def rk45(f, t_span, sol_init, h, fargs=None):
     prev = sol_init
     
     for t_id in range(1, sol_len):
-        t = t_eval[t_id]
+        t = t_eval[t_id-1] # there was an index error here, which I have now corrected. Formerly it was t_id not t_id - 1. Corrected on 13 June 2024, Thursday.
         curr = iter_rk45(prev, t, h, f, fargs)
         solution[t_id] = curr
         prev = curr
@@ -48,7 +48,10 @@ def rk45(f, t_span, sol_init, h, fargs=None):
 # Function to generate initial conditions
 
 def gen_init_cond(length, center, sd, f, h, fargs=None, t_stabilise=0, pdf="gaussian", seed = None, run_till_on_attractor = False):
-    
+    """
+    Generates an array of length of length of random initial conditions centered at center, with standard deviation sd.
+    If run_till_on_attractor == True then it runs the dynamical system using rk45 for time 0 to t_stabilise.
+    """
     np.random.seed(seed)
 
     z = np.array([center for i in range(length)])
