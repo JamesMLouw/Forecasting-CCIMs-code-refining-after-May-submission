@@ -16,7 +16,7 @@ class CrossValidate:
     validation_parameters : array_like of ints, optional
         Sizes in which to split a single training fold, validation fold and the number of folds (default None)
         If None, then validation parameter default to 0.8 of the data for the training fold, 0.1 for the validation fold, and however many folds so that
-        each starting point of the thold is 0.1 of the remaining 0.1 of the dataset
+        each starting point of the fold is 0.1 of the remaining 0.1 of the dataset
     validation_type : str, optional
         The manner in which the training and validation folds move with each fold iteration. Options: {"rolling", "expanding"}, (default "rolling")
     task : str, optional 
@@ -49,19 +49,25 @@ class CrossValidate:
 
         Parameters
         -------
+        estimator : class
+            Class for the type of estimator which will be initialised and trained (eg ESN, Volterra series etc.)
         data_in : array_like
             Full input data. Will be split up to form the folds
         target : array_like
             Full target data. Will be split up to form the folds
         estimator_parameters : array
             Parameters that will be rolled out and passed into the estimator
+        use_target : boolean
+            determines whether or not to use the target data in training (for the case of training ESNs, it is 
+            best to use the dictionary data generated in the training process, so that the training results agree
+            with the code used in graphing the ESNs), (default True, i.e. use target)
         
         Returns
         -------
         mean_validation_error : float
             Average mean square error between target and output over all folds
         """
-        print('combination number:', iteration_id)
+        print('combination number:', iteration_id) # Keep track of how far the code has run when put through the starmap function
         # Define the length of the incoming data inputs
         input_size = len(data_in)
         
@@ -120,7 +126,7 @@ class CrossValidate:
                     validation_in = data_in[start+train_size : ]
                     validation_target = target[start+train_size : ]
 
-            # Define the training and validaiton data for expanding validation type
+            # Define the training and validation data for expanding validation type
             elif self.validation_type == "expanding":
                 # Expanding window cross validation allows the train size to grow with each start
                 train_in = data_in[0 : start+train_size]
