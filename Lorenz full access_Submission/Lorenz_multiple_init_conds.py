@@ -60,6 +60,9 @@ steps_trans = int(t_trans/h)
 steps_split = int(t_split/h)
 
 Z0 = (0, 1, 1.05)
+
+Z0 = np.array([1,1,1.0])
+
 if type_init_conds == 'along trajectory':
     sd = 0
     init_conds = data_gen.gen_init_cond(1, Z0, sd, lorenz, 0, h,
@@ -223,26 +226,15 @@ print(b.shape)
 print(np.max(np.abs(a-b)))
 #%% train esn
 if training_type == 'train over all trajectories':
-    #reg_result = esn_help.multi_regression_covariance(ld, state_dicts, steps_trans)
-    #reg_result1 = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'], training_datas[0].transpose()[:12000], steps_trans )
-    reg_result = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],state_dicts[0]['input_data'],1000) # this one doesn't agree with the cv code, but does agree with the line above, so nothing is wrong with the two algorithms in esn_helperfunctions
-    reg_result1 = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],training_datas[0].transpose()[:12000],1000) # this one agrees with the cv code # update 22 May This one doesn't work, and in any case the wrong parameters are being inputted in the states.
-    reg_result2 = esn_help.regression_covariance_targets(ld, state_dicts[0]['all_states'],training_datas[0].transpose()[:12000],1000)
-    # as far as I can tell, there is nothing wrong with the esn helperfunctions code; it just seems to be the two different ways of inputting the inputs z are 
-    # giving different results, I know not why, since in the function where the regression is done, it seems that both give the same Z.
+    reg_result = esn_help.multi_regression_covariance(ld, state_dicts,1000)  
 elif training_type == 'train over one trajectory':
 	reg_result = esn_help.regression_covariance(ld, state_dicts[0], steps_trans)
 else:
      raise ValueError('Please pick a training type')
 
-print('same?', np.allclose(state_dicts[0]['input_data'], training_datas[0].transpose()[:12000]))
-print('regression result same?', np.allclose(reg_result[0], reg_result1[0]))
-print('same function and variable run twice', np.allclose(reg_result1[0], reg_result2[0]))
-print('inputs same', np.allclose(state_dicts[0]['input_data'], training_datas[0].transpose()[:12000]))
-
 # save regression result
 
-w, bias, cov_XZ = reg_result
+w, bias = reg_result
 np.save('Regression result w Lorenz access - ' + access ,w)
 np.save('Regression result bias Lorenz access - ' + access,bias)
 
@@ -262,16 +254,18 @@ print(np.mean(last_state))
 	
 predictions = esn_help.multi_prediction(state_dicts, reg_result, testing_datas, A, gamma, C, s, zeta, d, N)
 
-#print(predictions[0].shape)
-last_x = predictions[0]['states'][-1]
+print(predictions[0]['z_predictions'].shape)
+last_x = predictions[0]['z_predictions'][:,-1]
 print(np.mean(last_x))
 print(np.max(last_x))
+print(last_x)
 
 #save predictions
 
 
 np.save('Predictions Lorenz access - ' + access ,predictions)
 
+#%%
 av_training_error = esn_help.av_multi_training_error(state_dicts, reg_result, steps_trans)
 print('Average training error: ', av_training_error)
 

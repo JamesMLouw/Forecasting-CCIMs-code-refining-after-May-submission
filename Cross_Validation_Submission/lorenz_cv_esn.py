@@ -3,6 +3,7 @@
 May 8 Wed: I noticed that h = 0.005 here but in the code for graphing it is h=0.02. I want to change the graphing code and make sure the two correlate (same RC when started with same init cond etc.)
 Then run the cross validation code and use the parameters in the graphing code to see if that works. Also check my crossvalidation code.
 
+I also changed the initial condition to (1,1,1), which just looks less picky
 """
 import numpy as np
 
@@ -25,7 +26,7 @@ def lorenz(t, Z, args):
     return np.array([up, vp, wp])
 
 lor_args = (10, 8/3, 28)
-Z0 = (0, 1, 1.05)
+Z0 = np.array([1,1,1])
 
 h = 0.005
 t_span = (0, 100)
@@ -79,7 +80,7 @@ print(esn.zeta)
 
 #%% train esn
 
-esn.Train(train_in_esn[:12000], train_teach_esn[:12000])
+esn.Train(train_in_esn[:12000], use_teacher=False)
 
 w = esn.W
 bias = esn.bias
@@ -96,7 +97,10 @@ print(bias.shape)
 print(last_state.shape)
 print(np.max(last_state))
 print(np.mean(last_state))
+#%%
 
+a = np.array([0,1])
+a==None
 #%%
 a = np.array([1,1,1])
 b = np.array([1,2,1])
@@ -110,6 +114,7 @@ last_x = predictions[-1]
 print(predictions.shape)
 print(np.mean(last_x))
 print(np.max(last_x))
+print(last_x)
 
 
 #%%
@@ -125,7 +130,7 @@ if __name__ == "__main__":
     print('created CV')
     best_parameters, parameter_combinations, errors = CV.crossvalidate_multiprocessing(ESN,
                                         train_in_esn, train_teach_esn, param_ranges, 
-                                        param_names, param_add, num_processes=25)
+                                        param_names, param_add, num_processes=25, use_target=False)
     t2 = time()
 print(t2-t1)
 
@@ -418,5 +423,289 @@ Validation errors: 0.015099357061007384
 ld: 1e-13
 gamma: 2.1
 spec rad: 1.2000000000000002
+s: 0
+"""
+
+#%%
+"""
+Run on 30 May 2024, Th (not using dictionary, so still un matched with the graphing code)
+
+Best: 
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.003127928205534715
+ld: 3.1622776601683796e-14
+gamma: 5.4
+spec rad: 0.1
+s: 0
+
+Grid:
+
+
+# Define the range of parameters for which you want to cross validate over
+ld_range = np.logspace(-17,-9,17) 
+gamma_range =  np.linspace(2,6,41)
+spec_rad_range =  np.linspace(0, 1.5, 16)
+s_range = np.array([0])
+param_ranges = [ld_range, gamma_range, spec_rad_range, s_range]
+
+
+Intermediary Best Parameters:
+Validation errors: 793445728.1214458
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.0
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 7628.30702598965
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 3541.8498236311257
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 1081.2377806898567
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.5
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 741.758553111379
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.7000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 317.5551346114671
+ld: 1e-17
+gamma: 2.0
+spec rad: 1.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 92.66233260705368
+ld: 1e-17
+gamma: 2.0
+spec rad: 1.2000000000000002
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.3427711569627728
+ld: 1e-17
+gamma: 2.0
+spec rad: 1.3
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.24292759321201216
+ld: 1e-17
+gamma: 2.0
+spec rad: 1.4000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.13836083145541828
+ld: 1e-17
+gamma: 2.0
+spec rad: 1.5
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.13015068423539675
+ld: 1e-17
+gamma: 2.1
+spec rad: 1.4000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.12507363973599298
+ld: 1e-17
+gamma: 2.1
+spec rad: 1.5
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.11669376949743475
+ld: 1e-17
+gamma: 2.2
+spec rad: 1.4000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.08407107658215418
+ld: 1e-17
+gamma: 2.3
+spec rad: 1.4000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.06804031801727349
+ld: 1e-17
+gamma: 2.5
+spec rad: 1.4000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.03285399314442734
+ld: 1e-17
+gamma: 2.9
+spec rad: 1.4000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.03254627983324654
+ld: 1e-17
+gamma: 3.1
+spec rad: 1.4000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.032330541472602906
+ld: 1e-17
+gamma: 5.4
+spec rad: 1.5
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.026219726150601197
+ld: 1e-17
+gamma: 5.5
+spec rad: 1.5
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.025894400337706548
+ld: 3.1622776601683796e-17
+gamma: 2.2
+spec rad: 1.3
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.022759878589686137
+ld: 3.1622776601683796e-17
+gamma: 2.3
+spec rad: 1.3
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.0193883380118021
+ld: 3.1622776601683794e-15
+gamma: 2.2
+spec rad: 0.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.01599079347220121
+ld: 3.1622776601683794e-15
+gamma: 2.2
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.014755728729427426
+ld: 3.1622776601683794e-15
+gamma: 2.2
+spec rad: 0.30000000000000004
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.01156987464731996
+ld: 3.1622776601683794e-15
+gamma: 2.3
+spec rad: 0.4
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.010688020072204162
+ld: 3.1622776601683794e-15
+gamma: 2.4
+spec rad: 0.5
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.010183410928338504
+ld: 3.1622776601683794e-15
+gamma: 2.9
+spec rad: 0.4
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.009154631179676076
+ld: 3.1622776601683794e-15
+gamma: 3.0
+spec rad: 0.4
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.007635138192081378
+ld: 3.1622776601683794e-15
+gamma: 3.5
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.006698542638303479
+ld: 3.1622776601683794e-15
+gamma: 3.9000000000000004
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.006600862622208376
+ld: 3.1622776601683794e-15
+gamma: 4.0
+spec rad: 0.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.0060040733659155535
+ld: 1e-14
+gamma: 3.4000000000000004
+spec rad: 0.30000000000000004
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.005387244616301604
+ld: 1e-14
+gamma: 4.300000000000001
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.00506062979459136
+ld: 1e-14
+gamma: 4.6
+spec rad: 0.30000000000000004
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.0045381968908985975
+ld: 1e-14
+gamma: 5.2
+spec rad: 0.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.0036349175215868133
+ld: 1e-14
+gamma: 5.300000000000001
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.003127928205534715
+ld: 3.1622776601683796e-14
+gamma: 5.4
+spec rad: 0.1
 s: 0
 """

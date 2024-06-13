@@ -214,26 +214,9 @@ def regression_covariance_targets(ld, states, targets, washout):
     print('cov_XZ', cov_XZ[5,:])
     
     w_best = np.linalg.solve(cov_XX, cov_XZ)
-    w_best1 = np.linalg.inv(cov_XX) @ cov_XZ
-    w_best2 = np.linalg.pinv(cov_XX) @ cov_XZ
-
-    inv_check = np.linalg.inv(cov_XX) @ cov_XX
-    pinv_check = np.linalg.pinv(cov_XX) @ cov_XX
-
-    print('solve and inv', np.allclose(w_best, w_best1))
-    print('inv and pinv', np.allclose(w_best2, w_best1))
-    print('solve and pinv', np.allclose(w_best, w_best2))
-
-    print('inv check',np.allclose(inv_check, np.identity(cov_XX.shape[0])))
-    print('pinv check',np.allclose(inv_check, np.identity(cov_XX.shape[0])))
-
-    print(inv_check.shape)
-    print('condition number', np.linalg.cond(cov_XX))
-    #print('inv_check', inv_check[0])
-    #print('pinv_check', pinv_check[0])
     a_best = (np.mean(Z, axis=1) - (w_best.transpose() @ np.mean(X, axis=1))).reshape(d, 1)
 
-    return w_best, a_best, cov_XZ
+    return w_best, a_best
 
 def multi_regression_covariance(ld, state_dicts, T_trans):
     X = []
