@@ -701,3 +701,215 @@ gamma: 5.4
 spec rad: 0.1
 s: 0
 """
+
+#%% Run on 13 June 2024, Th
+
+
+"""
+Result:
+
+ld: 3.1622776601683796e-14
+gamma: 6.0
+spec rad: 0.1
+s: 0
+
+Grid:
+
+ld_range = np.logspace(-17,-9,17) 
+gamma_range =  np.linspace(2,6,41)
+spec_rad_range =  np.linspace(0, 1.5, 16)
+s_range = np.array([0])
+
+Intermediary Best Parameters:
+Validation errors: 800686411.6007594
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.0
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 12267.0246139052
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 3471.1718482671704
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 2859.113319916076
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.5
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 697.2701994510019
+ld: 1e-17
+gamma: 2.0
+spec rad: 0.7000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 424.5214483314693
+ld: 1e-17
+gamma: 2.0
+spec rad: 1.2000000000000002
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.325686856916136
+ld: 1e-17
+gamma: 2.0
+spec rad: 1.3
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.2429275054150164
+ld: 1e-17
+gamma: 2.0
+spec rad: 1.4000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.1382333763765786
+ld: 1e-17
+gamma: 2.0
+spec rad: 1.5
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.13015077611882803
+ld: 1e-17
+gamma: 2.1
+spec rad: 1.4000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.12484834733668185
+ld: 1e-17
+gamma: 2.1
+spec rad: 1.5
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.02587812833304476
+ld: 1e-17
+gamma: 2.2
+spec rad: 1.3
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.01962571116894433
+ld: 1e-17
+gamma: 2.3
+spec rad: 1.3
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.01849974690459749
+ld: 3.1622776601683796e-17
+gamma: 2.3
+spec rad: 1.3
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.018198807350924644
+ld: 1e-15
+gamma: 2.3
+spec rad: 1.3
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.01093383190084522
+ld: 3.1622776601683794e-15
+gamma: 2.0
+spec rad: 1.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.00783147268342297
+ld: 3.1622776601683794e-15
+gamma: 2.1
+spec rad: 1.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.007215395506341362
+ld: 3.1622776601683794e-15
+gamma: 2.8
+spec rad: 0.6000000000000001
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.006878864204149076
+ld: 3.1622776601683794e-15
+gamma: 3.9000000000000004
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.0063934537772749826
+ld: 3.1622776601683794e-15
+gamma: 4.0
+spec rad: 0.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.005928086196941801
+ld: 1e-14
+gamma: 2.1
+spec rad: 1.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.005901197889884013
+ld: 1e-14
+gamma: 3.6
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.0052590494169076395
+ld: 1e-14
+gamma: 4.4
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.005147797301031075
+ld: 1e-14
+gamma: 4.7
+spec rad: 0.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.0044589449202772176
+ld: 1e-14
+gamma: 5.2
+spec rad: 0.1
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.003617778624672317
+ld: 1e-14
+gamma: 5.300000000000001
+spec rad: 0.2
+s: 0
+----------------------------------------
+Intermediary Best Parameters:
+Validation errors: 0.003059440020844761
+ld: 3.1622776601683796e-14
+gamma: 6.0
+spec rad: 0.1
+s: 0
+----------------------------------------
+>>> print(t2-t1)
+76388.53563690186
+>>>
+"""
