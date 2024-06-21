@@ -12,6 +12,33 @@ plt.rcParams['font.size'] = 25
 # Function to generate reservoir
 
 def gen_matrix(shape, density, sd=1, mean=0, loc_seed=100, val_seed=100, pdf="gaussian", seeded=True):
+    """
+    Generates an array with specified shape, density and pdf
+     
+    Parameters
+    ----------
+    shape : tuple
+        Shape of matrix to be generated
+    density : float between 0 and 1
+        Density of matrix
+    pdf : string from {"gaussian", "uniform", "ones"}
+        Pdf to be used in selecting values for the matrix
+    sd : float
+        Scale of the selected pdf
+    mean : float
+        Mean of selected pdf
+    loc_seed : int
+        Controls seed to be used in determining matrix density
+    val_seed : int
+        Controls seed for selecting values to populate the matrix
+    seeded : boolean
+        Controls whether to use a random seed or not
+
+    Returns
+    -------
+    output : np_array
+        array according to the given shape, density and pdf
+    """
     
     def seeded_rvs_gauss(array_len):
             return stats.norm(loc=mean, scale=sd).rvs(random_state = val_seed, size=array_len)
@@ -70,6 +97,7 @@ def spectral_radius(M):
 def spectral_radius_matrix(M, desired_spec_rad):
     M_sr = spectral_radius(M)
     if M_sr == 0:
+        raise ValueError('Matrix has spectral radius 0')
         return M
     else:
         M = M*(desired_spec_rad/M_sr)
@@ -78,6 +106,7 @@ def spectral_radius_matrix(M, desired_spec_rad):
 def norm_matrix(M, desired_norm):
     M_n = np.linalg.norm(M)
     if M_n == 0:
+        raise ValueError('Matrix has zero norm')
         return M
     else:
         return M * (desired_norm/M_n)
@@ -99,6 +128,31 @@ def observation(x_curr, reg_result):
 # Listening, training and predicting(testing)
 
 def listening(training_data, x_0, A, gamma, C, s, zeta, d, N):
+    """
+    Generates a sequence in the state space corresponding to the input
+    We use the state equation x_t = F(x_{t-1}, z_{t-1})
+
+    Parameters
+    ----------
+    training_data : array_like
+        input data for the ESN; must have shape (nsamples, ndim)
+    x_0 : array_like
+        initial value for the state space; shape (N, 1)
+    A, gamma, C, s, zeta : parameters for ESN
+    d, N : int
+        dimension of inputs/outputs and states, respectively
+
+    Returns
+    -------
+    state_dict : dictionary
+        'all_states' : array_like
+            state space sequence corresponding to inputs; shape (ndim, nsamples)
+        'last_state' : array_like
+            final state; shape (N, 1)
+        'input_data' : array_like
+            input data; shape (ndim, nsamples)
+    """
+
     state_dict = {'all_states': None,
                   'last_state': None, 
                   'input_data': None}
@@ -124,13 +178,24 @@ def listening(training_data, x_0, A, gamma, C, s, zeta, d, N):
             X[:, t] = x_curr[:, 0]
             Z[:, t] = z_curr[:, 0]
                 
-    state_dict['last_state'] = x_curr # this is x_T-1, where our training data runs up to time T-1
+    state_dict['last_state'] = x_curr # this is x_{T-1}, where our training data runs up to time T-1
     state_dict['all_states'] = X
     state_dict['input_data'] = Z
     
     return state_dict
 
 def multi_listening(training_datas, x_0, A, gamma, C, s, zeta, d, N):
+    """
+    Applies listening function to a list of training_data
+    Parameters
+    ----------
+    training_datas : list
+        list of input trajectories (nsamples, ndim)
+    Returns
+    -------
+    state_dicts : list
+        list of state_dict for each input trajectory
+    """
     state_dicts = []
     
     for i in range(len(training_datas)):
@@ -213,8 +278,8 @@ def regression_covariance_targets(ld, states, targets, washout):
     print(cov_XZ.shape)
     print('cov_XZ', cov_XZ[5,:])
     
-    w_best = np.linalg.solve(cov_XX, cov_XZ)
-    a_best = (np.mean(Z, axis=1) - (w_best.transpose() @ np.mean(X, axis=1))).reshape(d, 1)
+    w_best = np.linalg.solve(cov_XX, cov_XZ) # shape (N,d)
+    a_best = (np.mean(Z, axis=1) - (w_best.transpose() @ np.mean(X, axis=1))).reshape(d, 1) # shape (d,1)
 
     return w_best, a_best
 
@@ -250,6 +315,31 @@ def multi_regression_covariance(ld, state_dicts, T_trans):
 
 
 def prediction(state_dict, reg_result, testing_data, A, gamma, C, s, zeta, d, N):
+    """"
+    Continues a trajectory of predictions using the trained ESN and compares to a testing trajectory
+    Parameters
+    ----------
+    state_dict : dictionary
+        state_dict from listening phase
+    reg_result : tuple
+        The regression result from training: (W, bias) where W has shape (N,d)
+        (it will be transposed in the observation function) and bias has shape (d,1)
+    testing_data : array_like
+        data to compare the generated trajectory against, must have shape (nsamples, ndim)
+    A, gamma, C, s, zeta, d, N : ESN parameters
+
+    Returns
+    -------
+    prediction_dict : dictionary
+        'testing_error' : float
+            the mse between the testing_data and predicted data
+        'z_actuals' : array_like
+            actual data to be tested against; shape is (ndim, nsamples)
+        'z_predictions' : array_like
+            predicted values; shape is (ndim, nsamples)
+        'states' : array_like
+            corresponding predicted sequence in the state space; shape is (ndim, nsamples)
+    """
     prediction_dict = {'testing_error': None,
                        'z_actuals': None,
                        'z_predictions': None,
@@ -282,6 +372,22 @@ def prediction(state_dict, reg_result, testing_data, A, gamma, C, s, zeta, d, N)
     return prediction_dict
 
 def multi_prediction(state_dicts, reg_result, testing_datas, A, gamma, C, s, zeta, d, N):
+    """
+    applies prediction function to multiple trajectories at the same time
+    Parameters
+    ----------
+    state_dicts : list
+        list of state_dicts of the trajectories
+    reg_result : tuple
+        regression result from training (it doesn't matter whether training was performed over one trajectory or all)
+    testing_datas : list
+        list of testing trajectories for testing to be performed over, corresponding to the trajectories of state_dicts
+    
+    Returns
+    -------
+    prediction_dicts : list
+        list of prediction_dicts of trajectories
+    """
     prediction_dicts = []
     
     for i in range(len(state_dicts)):
@@ -291,7 +397,21 @@ def multi_prediction(state_dicts, reg_result, testing_datas, A, gamma, C, s, zet
     return prediction_dicts
 
 def training_error(state_dict, reg_result, T_trans):
-
+    """
+    calculates the mse during training
+    Parammeters
+    -----------
+    state_dict : dictionary
+        state_dict from listening phase
+    reg_result : tuple
+        has form (W, bias), from regression fitting
+    T_trans : int
+        washout, data before this is not accounted for in the mse
+    Returns
+    -------
+    training_error : float
+        mse committed during training
+    """
     X = state_dict.get('all_states')
     Z = state_dict.get('input_data')
     
@@ -310,6 +430,20 @@ def training_error(state_dict, reg_result, T_trans):
     return training_error
 
 def av_multi_training_error(state_dicts, reg_result, T_trans):
+    """"
+    returns mean mse committed during training over a list of trajectories
+    Parameters
+    ----------
+    state_dicts : list
+        list of state_dict from training for each trajectory
+    reg_result : tuple
+        regression result from training for the esn
+    T_trans : int
+        washout
+    Returns
+    -------
+    mean training mse over all trajectories    
+    """
     errors = []
     
     for i in range(len(state_dicts)):

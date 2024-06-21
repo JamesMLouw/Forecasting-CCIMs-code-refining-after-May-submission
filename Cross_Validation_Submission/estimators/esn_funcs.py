@@ -37,7 +37,7 @@ class ESN:
         Connectivity matrix
     x_0 : numpy_array of floats; shape (N,1)
         Initial state space point
-    W : numpy_array of floats; shape (d_out,N)
+    W : numpy_array of floats; shape (N, d_out) (will be transposed in the observation function)
         Readout matrix
     bias : numpy_array of floats; shape (d_out, 1)
         Output shift vector
@@ -47,7 +47,8 @@ class ESN:
     Train(training_input, training_teacher)
         Performs training using the training input against the training teacher for the ESN
     Forecast(testing_input)
-        Performs testing using a new set of testing input 
+        Performs testing using a new set of testing input. Outputs are generated for this set, which can be tested
+        against a corresponding testing_output
     PathContinue(latest_input, nhorizon)
         Simulates forward in time using the latest input for nhorizon period of time
         This requires a training where the training_teacher = training_input, so that the ESN can be run autonomously
@@ -78,12 +79,12 @@ class ESN:
 
         # Instance attributes storing arrays created by methods
         self.training_input = None      # Stores training input seen during training
-        self.x_start_path_continue = np.zeros(shape=(N,1)) # Stores last state after training
-        self.x_start_forecasting = np.zeros(shape=(N,1)) # Stores next state after training
+        # We use the state equation x_t = F(x_{t-1}, z_{t-1}). Training data runs up to time -1, i.e. z_{-1}
+        self.x_start_path_continue = np.zeros(shape=(N,1)) # Stores last state after training, i.e. x_{-1}
+        self.x_start_forecasting = np.zeros(shape=(N,1)) # Stores next state after training, i.e. x_0
         
         # Instance attributes storing data dependent values created by methods
         self.ninputs = None             # Store training input length
-        self.ntargets = None            # Store number of targets output in testing
         self.nhorizon = None            # Store length of forecasting horizon
         
        
@@ -99,6 +100,11 @@ class ESN:
             Training input for training the ESN. Must have format (nsamples, ndim)
         training_teacher : array_like
             Training teacher for training the ESN. Must have format (nsamples, ndim)
+        use_teacher : boolean
+            In the case that use_teacher == False, this uses the data from the dictionary returned in
+            the ESN listening stage, rather than the teacher data. Although the two data may be identical,
+            the training results are different. To callibrate this with the code used in graphing the ESNs,
+            set use_teacher = False.
 
         Returns
         -------
@@ -119,19 +125,16 @@ class ESN:
         
         # Assign instance attributes that are related to the training teacher data
         if use_teacher:
-            self.ntargets = training_teacher.shape[1]
             if self.d_out != training_teacher.shape[1]:
                 raise ValueError("The dimension of the training teacher is incorrect")
-        else:
-            self.ntargets = self.d_out
         
         # Check that the training input and training teacher sizes are the same
         if use_teacher:
             nteacher = training_teacher.shape[0]
             if self.ninputs != nteacher:
                 raise ValueError("The size of the training teacher and training inputs do not match")
-            else:
-                nteacher = self.ninputs
+        else:
+            nteacher = self.ninputs
         
         # Check that the washout is not greater than the size of the inputs
         if self.washout >= self.ninputs:
@@ -148,7 +151,7 @@ class ESN:
             
         self.W = reg_result[0]
         self.bias = reg_result[1]
-        self.x_start_path_continue = state_dict['last_state'] # x_-1
+        self.x_start_path_continue = state_dict['last_state'] # x_{-1}
         self.x_start_forecasting = esn_help.state(self.x_start_path_continue,
                                                   training_input[-1].reshape((self.d_in,1)),
                                                   self.A, self.gamma, self.C, self.s,
@@ -167,11 +170,13 @@ class ESN:
         ----------
         testing_input : array_like
             New input given that should be used for forecasting. Must have format (nsamples, ndim)
+            Inputs run from t=0,...,nsamples-1
 
         Returns
         -------
         output : array_like
             ESN forecasts, will be of the same type as the training teacher. Will have format (nsamples, ndim)
+            Output runs from t=0,...,nsamples-1
         
         Note
         ----
@@ -187,10 +192,10 @@ class ESN:
         
         # Iterate through the testing horizon
         for t in range(self.nhorizon):
+            output[t] = esn_help.observation(x_curr, (self.W, self.bias)) # self.W.transpose() @ x_curr + self.bias
             z_curr = testing_input[t].reshape((self.d_in,1)) # testing_input[0] is z_0
             x_curr = esn_help.state(x_curr, z_curr, self.A, self.gamma, self.C, self.s, self.zeta, self.d_in)
-            output[t] = esn_help.observation(x_curr, (self.W, self.bias)) # self.W @ x_curr + self.bias
-        
+            
         return output
     
     
@@ -210,6 +215,7 @@ class ESN:
         -------
         output : array_like
             Output of forecasting. Will have format (nsamples, ndim)
+            Output runs from t=0,...,nsamples-1
             
         Note
         ----
@@ -221,8 +227,8 @@ class ESN:
         
         # Initialise store for the forecast output
         output = np.zeros((self.nhorizon, self.d_out, 1))
-        z_curr = latest_input.reshape((self.d_in,1)) # z_-1
-        x_curr = self.x_start_path_continue # x_-1
+        z_curr = latest_input.reshape((self.d_in,1)) # z_{-1}
+        x_curr = self.x_start_path_continue # x_{-1}
                 
         # Iterate through the testing horizon
         for t in range(self.nhorizon):

@@ -98,6 +98,16 @@ print(last_state.shape)
 print(np.max(last_state))
 print(np.mean(last_state))
 
+#%%
+A = np.array([[1,2,3], [4,5,6]])
+B = np.array([[7,8,9], [10,11,12]])
+
+C = np.concatenate((A, B), axis = 1)
+print(C)
+
+print(np.linalg.norm(A, axis = 0 )**2)
+print(A.shape)
+
 
 #%% path continue with esn
 
