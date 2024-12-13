@@ -5,6 +5,8 @@ import statistics as stats
 from mpl_toolkits.mplot3d import Axes3D 
 import numpy.random as random
 
+# asdf
+
 import sys
 # sys.path.append("/Users/JamesLouw/Documents/Personal-Projects-main/[Final] Lorenz")
 
